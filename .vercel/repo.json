@@ -1,0 +1,11 @@
+{
+  "remoteName": "origin",
+  "projects": [
+    {
+      "id": "prj_LIApbvHHTBqwSlGa1sSRgBIpYc7e",
+      "name": "vicare-fancoil-app",
+      "directory": ".",
+      "orgId": "team_maxMCR3hKF8zfXM7hgHz9s6i"
+    }
+  ]
+}
