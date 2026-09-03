@@ -4,6 +4,7 @@ const axios = require('axios');
 const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
+const { kv } = require( '@vercel/kv' );
 
 const IAM_BASE = 'https://iam.viessmann-climatesolutions.com/idp/v3';
 const API_BASE = 'https://api.viessmann-climatesolutions.com/iot/v2';
@@ -11,17 +12,24 @@ const TOKENS_FILE = path.join(__dirname, '..', '.tokens.vicare.json');
 
 let pkceVerifier = null; // guardat en memòria entre l'inici i el callback OAuth
 
-function loadTokens() {
+// Funcions asíncrones amb Vercel KV (sense utilitzar el disc fs)
+async function loadTokens() {
   try {
-    return JSON.parse(fs.readFileSync(TOKENS_FILE, 'utf8'));
-  } catch {
+    const tokens = await kv.get('vicare_tokens');
+    return tokens || { access_token: null, refresh_token: null };
+  } catch (err) {
     return { access_token: null, refresh_token: null };
   }
 }
 
-function saveTokens(tokens) {
-  fs.writeFileSync(TOKENS_FILE, JSON.stringify(tokens, null, 2));
+async function saveTokens(tokens) {
+  try {
+    await kv.set('vicare_tokens', tokens);
+  } catch (err) {
+    console.error('Error KV:', err.message);
+  }
 }
+
 
 // --- Pas 1: generar la URL de login que l'usuari ha d'obrir al navegador ---
 function buildAuthUrl() {
